@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "ml.sergiu.wobus.MESSAGE";
+    public static final CTPParser ctpParser = new CTPParser();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
 
         String locationName = editText.getText().toString();
         startActivity(intent);
+    }
 
+    public void showAllBusLines(View view) {
+        Intent intent = new Intent(this, BusDescriptionActivity.class);
+        startActivity(intent);
     }
 }

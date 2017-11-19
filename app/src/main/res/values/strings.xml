@@ -3,4 +3,8 @@
     <string name="edit_message">Enter a location name</string>
     <string name="button_send">Show</string>
     <string name="title_activity_maps">Wobus</string>
+    <string name="title_activity_bus_description">BusDescriptionActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="button_show_all_buslines">Show all public transit lines</string>
 </resources>
