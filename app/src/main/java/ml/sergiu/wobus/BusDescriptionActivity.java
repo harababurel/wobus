@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,11 +21,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class BusDescriptionActivity extends AppCompatActivity {
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        UpdateSpinnerElements();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +43,9 @@ public class BusDescriptionActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // Setup spinner
-        List<BusLine> busLines = new ArrayList(CTPParser.getInstance().busLines());
+        UpdateSpinnerElements();
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        spinner.setAdapter(new MyAdapter(
-                toolbar.getContext(),
-                busLines.stream().map(line -> line.toString()).collect(Collectors.toList())));
+
 
         spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
@@ -66,6 +71,15 @@ public class BusDescriptionActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void UpdateSpinnerElements() {
+        Log.i("BUS", "Updating spinner elements");
+        Log.i("BUS", "There are " + CTPScraper.getInstance().busLines().size() + " bus lines");
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner.setAdapter(new MyAdapter(
+                findViewById(R.id.toolbar).getContext(),
+                CTPScraper.getInstance().busLines().stream().map(line -> line.toString()).collect(Collectors.toList())));
     }
 
 

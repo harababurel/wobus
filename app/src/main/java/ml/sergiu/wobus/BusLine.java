@@ -15,7 +15,7 @@ public class BusLine {
 
     @Override
     public String toString() {
-        return this.name + " (" + this.type.toString() + ")";
+        return this.name + " (" + this.type + ")";
     }
 
     enum BusType {
