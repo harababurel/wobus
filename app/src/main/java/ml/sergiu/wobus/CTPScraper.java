@@ -12,19 +12,28 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class CTPScraper {
-    private static final String baseURL = "http://ctpcj.ro/index.php/en/timetables/urban-lines/";
     private static CTPScraper instance = null;
+    private final URI baseURI;
     private final Map<String, BusLine> busLines;
 
 
     private CTPScraper() {
         // exists only to defeat instantiation.
+
+        URI tmpURI = null;
+        try {
+            tmpURI = new URI("http://ctpcj.ro/index.php/en/timetables/urban-lines/");
+        } catch (Exception e) {
+            Log.e("BOBS", "Could not create base URL");
+        }
+        baseURI = tmpURI;
         busLines = new HashMap<>();
     }
 
@@ -37,16 +46,31 @@ public class CTPScraper {
 
     public void Scrape() {
         try {
-            Document doc = new GetDocumentTask().execute(baseURL).get();
+            Log.i("BOBS", "Opening doc = \"" + baseURI + "\".");
+            Document doc = new GetDocumentTask().execute(baseURI).get();
+            Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
             lines.stream().forEach(line -> {
-                Log.i("LINE", line.text());
-                AddOrUpdateBusLine(new BusLine(line.text(), BusLine.BusType.BUS));
+                URI busLineURI = baseURI.resolve(line.attr("href"));
+                Log.i("BOBS", line.text());
+                Log.i("BOBS", busLineURI.toString());
+                AddOrUpdateBusLine(new BusLine(line.text(), busLineURI));
             });
+        } catch (Exception e) {
+            Log.e("BOBS", "could not scrape" + baseURI);
         }
-        catch(Exception e) {
-            Log.e("Scraper", "could not scrape");
+
+        Log.i("BOBS", "finished Scrape()");
+    }
+
+    public String ScrapeBusPage(URI uri) {
+        try {
+            Document doc = new GetDocumentTask().execute(uri).get();
+            return doc.text();
+        } catch (Exception e) {
+            Log.e("BOBS", "could not scrape" + uri);
         }
+        return "";
     }
 
     public void AddOrUpdateBusLine(BusLine busLine) {
@@ -64,33 +88,33 @@ public class CTPScraper {
         return busLines.values();
     }
 
-class GetDocumentTask extends AsyncTask<String, Void, Document> {
-    private Exception exception;
+    class GetDocumentTask extends AsyncTask<URI, Void, Document> {
+        private Exception exception;
 
-    protected Document doInBackground(String... urls) {
-        try {
-            return Jsoup.connect(urls[0]).get();
-        } catch (NullPointerException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "Connection is null");
-        } catch (MalformedURLException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "Malformed URL");
-        } catch (HttpStatusException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "Response not OK");
-        } catch (UnsupportedMimeTypeException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "Unsupported MIME type");
-        } catch (SocketTimeoutException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "Socket timeout");
-        } catch (IOException e) {
-            this.exception = e;
-            Log.e("SCRAPER", "IO Exception");
+        protected Document doInBackground(URI... uris) {
+            try {
+                return Jsoup.connect(uris[0].toString()).get();
+            } catch (NullPointerException e) {
+                Log.e("BOBS", "Connection is null");
+                this.exception = e;
+            } catch (MalformedURLException e) {
+                Log.e("BOBS", "Malformed URL");
+                this.exception = e;
+            } catch (HttpStatusException e) {
+                Log.e("BOBS", "Response not OK");
+                this.exception = e;
+            } catch (UnsupportedMimeTypeException e) {
+                Log.e("BOBS", "Unsupported MIME type");
+                this.exception = e;
+            } catch (SocketTimeoutException e) {
+                Log.e("BOBS", "Socket timeout");
+                this.exception = e;
+            } catch (IOException e) {
+                Log.e("BOBS", "IO Exception");
+                this.exception = e;
+            }
+            return null;
         }
-        return null;
-    }
 
-}
+    }
 }
