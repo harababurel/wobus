@@ -8,4 +8,5 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="button_show_transit_lines">Show transit lines</string>
     <string name="button_scrape">Scrape</string>
+    <string name="title_activity_transit_line_details">TransitLineDetailsActivity</string>
 </resources>

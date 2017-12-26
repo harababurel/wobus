@@ -3,14 +3,14 @@ package ml.sergiu.wobus;
 import java.net.URI;
 import java.util.List;
 
-public class BusLine {
+public class TransitLine {
     public String name;
     public URI uri;
-    public BusType type;
+    public TransitType type;
     public String endA, endB;
     List<String> departuresA, departuresB;
 
-    public BusLine(String name, URI uri) {
+    public TransitLine(String name, URI uri) {
         this.name = name;
         this.uri = uri;
     }
@@ -20,7 +20,7 @@ public class BusLine {
         return this.name;
     }
 
-    enum BusType {
+    enum TransitType {
         BUS, MINIBUS, TRAM, TROLLEYBUS;
 
         public String toString() {
