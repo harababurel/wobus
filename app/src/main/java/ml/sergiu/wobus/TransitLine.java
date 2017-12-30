@@ -2,10 +2,12 @@ package ml.sergiu.wobus;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 public class TransitLine {
     public String name;
     public URI uri;
+    public Optional<URI> mapImageURI;
     public TransitType type;
     public String endA, endB;
     List<String> departuresA, departuresB;
@@ -13,6 +15,7 @@ public class TransitLine {
     public TransitLine(String name, URI uri) {
         this.name = name;
         this.uri = uri;
+        this.mapImageURI = Optional.empty();
     }
 
     @Override

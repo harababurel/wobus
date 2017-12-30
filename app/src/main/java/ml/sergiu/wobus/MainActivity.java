@@ -1,5 +1,7 @@
 package ml.sergiu.wobus;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,10 +15,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final CTPScraper ctpScraper = CTPScraper.getInstance();
@@ -52,6 +57,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // Supply index input as an argument.
             Bundle args = new Bundle();
             args.putString("name", line.name);
+
+
+            if (line.mapImageURI.isPresent()) {
+                args.putString("map_image_uri", line.mapImageURI.get().toString());
+                line.mapImageURI = Optional.empty(); // don't download the image again
+            }
+
             f.setArguments(args);
             return f;
         }
@@ -63,10 +75,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Bundle args = getArguments();
             String name = args.getString("name");
 
+            ImageView map_image = view.findViewById(R.id.map_image);
+
+            try {
+                String map_image_uri = args.getString("map_image_uri");
+                Log.i("BOBS", "image uri is " + map_image_uri);
+                new DownloadImageTask(map_image).execute(map_image_uri);
+            } catch (Exception e) {
+                Log.e("BOBS", e.toString());
+            }
+
             TextView line_number_label = (TextView) view.findViewById(R.id.line_number_label);
             line_number_label.setText(name);
 
+
             return view;
+        }
+    }
+
+    // https://stackoverflow.com/questions/5776851/load-image-from-url
+    private static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
         }
     }
 

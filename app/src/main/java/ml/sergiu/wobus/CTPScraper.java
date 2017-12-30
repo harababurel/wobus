@@ -44,25 +44,46 @@ public class CTPScraper {
             Document doc = Jsoup.connect(baseURI.toString()).get();
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
-            lines.stream().forEach(line -> {
-                URI busLineURI = baseURI.resolve(line.attr("href"));
+            lines.stream().limit(5).forEach(line -> {
+                URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
-                Log.i("BOBS", busLineURI.toString());
-                AddOrUpdateBusLine(new TransitLine(line.text(), busLineURI));
+                Log.i("BOBS", transitLineURI.toString());
+
+                Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
+
+                if (transitLine.isPresent()) {
+                    AddOrUpdateBusLine(transitLine.get());
+                }
             });
         } catch (Exception e) {
             Log.e("BOBS", "could not scrape" + baseURI);
         }
     }
 
-    public String ScrapeBusPage(URI uri) {
+    public Optional<TransitLine> ScrapeTransitLinePage(URI uri) {
+        Optional<TransitLine> ret = Optional.empty();
+
         try {
             Document doc = Jsoup.connect(uri.toString()).get();
-            return doc.text();
+            ret = Optional.of(new TransitLine("", null));
+//            Log.i("BOBS", doc.html());
+
+            String name = doc.select("h1[class^=TzArticleTitle]").first().text();
+            ret.get().name = name;
+
+            try {
+                String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
+                ret.get().mapImageURI = Optional.of(new URI("http://ctpcj.ro" + mapImageURI));
+            } catch (Exception e) {
+                Log.i("BOBS", "Line " + uri.toString() + " has no map; skipping");
+                Log.i("BOBS", "Exception: " + e);
+            }
         } catch (Exception e) {
-            Log.e("BOBS", "could not scrape" + uri);
+            Log.e("BOBS", "could not scrape " + uri);
+            Log.e("BOBS", "reason: " + e);
         }
-        return "";
+
+        return ret;
     }
 
     public void AddOrUpdateBusLine(TransitLine transitLine) {
