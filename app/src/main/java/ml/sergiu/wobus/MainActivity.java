@@ -27,7 +27,6 @@ import java.util.Optional;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final CTPScraper ctpScraper = CTPScraper.getInstance();
     TabsPagerAdapter pagerAdapter;
-//    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,14 +50,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-//    /** Called when the user taps the "Show on map" button */
-//    public void showMap(View view) {
-//        Intent intent = new Intent(this, MapsActivity.class);
-//        String message = "haha";
+    //    /** Called when the user taps the "Show on map" button */
+    public void showMap(View view) {
+        Intent intent = new Intent(this, MapsActivity.class);
 
-//        intent.putExtra("tag", message);
-//        startActivity(intent);
-//    }
+
+        ViewPager pager = (ViewPager) findViewById(R.id.viewPager);
+
+        TransitLine current_line = ctpScraper.busLines().get(pager.getCurrentItem());
+        Log.i("BOBS", "Currently selected transit line: " + current_line.toString());
+
+
+        intent.putExtra("current_line", current_line);
+
+        startActivity(intent);
+    }
 
     public static class TransitDetailsFragment extends Fragment {
         public static TransitDetailsFragment newInstance(TransitLine line) {
@@ -67,10 +73,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Bundle args = new Bundle();
             args.putString("name", line.name);
 
-
-            if (line.mapImageURI.isPresent()) {
-                args.putString("map_image_uri", line.mapImageURI.get().toString());
-                line.mapImageURI = Optional.empty(); // don't download the image again
+            if (line.getMapImageURI().isPresent()) {
+                args.putString("map_image_uri", line.getMapImageURI().get().toString());
+                line.setMapImageURI(null); // don't download the image again
             }
 
             f.setArguments(args);

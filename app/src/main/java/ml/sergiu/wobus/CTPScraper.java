@@ -7,15 +7,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class CTPScraper {
     private static CTPScraper instance = null;
     private final URI baseURI;
-    private final Map<String, TransitLine> transitLines;
+    private final List<TransitLine> transitLines;
+    private final Map<String, TransitLine> transitLinesMap;
 
 
     private CTPScraper() {
@@ -28,7 +31,8 @@ public class CTPScraper {
             Log.e("BOBS", "Could not create base URL");
         }
         baseURI = tmpURI;
-        transitLines = new HashMap<>();
+        transitLines = new ArrayList<>();
+        transitLinesMap = new HashMap<>();
     }
 
     public static CTPScraper getInstance() {
@@ -73,7 +77,7 @@ public class CTPScraper {
 
             try {
                 String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
-                ret.get().mapImageURI = Optional.of(new URI("http://ctpcj.ro" + mapImageURI));
+                ret.get().setMapImageURI(new URI("http://ctpcj.ro" + mapImageURI));
             } catch (Exception e) {
                 Log.i("BOBS", "Line " + uri.toString() + " has no map; skipping");
                 Log.i("BOBS", "Exception: " + e);
@@ -87,17 +91,18 @@ public class CTPScraper {
     }
 
     public void AddOrUpdateBusLine(TransitLine transitLine) {
-        transitLines.put(transitLine.name, transitLine);
+        transitLines.add(transitLine);
+        transitLinesMap.put(transitLine.name, transitLine);
     }
 
     public Optional<TransitLine> getBusLine(String name) {
-        if (transitLines.containsKey(name)) {
-            return Optional.of(transitLines.get(name));
+        if (transitLinesMap.containsKey(name)) {
+            return Optional.of(transitLinesMap.get(name));
         }
         return Optional.empty();
     }
 
-    public Collection<TransitLine> busLines() {
-        return transitLines.values();
+    public List<TransitLine> busLines() {
+        return transitLines;
     }
 }
