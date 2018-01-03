@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "ml.sergiu.wobus"
         minSdkVersion 15
@@ -10,6 +11,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
+        multiDexEnabled true //important
     }
     buildTypes {
         release {
@@ -25,7 +27,8 @@ android {
 
 dependencies {
     implementation 'com.android.support:design:26.1.0'
-    compile 'com.google.android.gms:play-services:9.8.0'
+    implementation 'com.google.android.gms:play-services-maps:11.8.0'
+//    compile 'com.google.android.gms:play-services:9.8.0'
     compile 'com.google.maps:google-maps-services:0.2.5'
     compile 'org.slf4j:slf4j-nop:1.7.25'
     implementation fileTree(include: ['*.jar'], dir: 'libs')

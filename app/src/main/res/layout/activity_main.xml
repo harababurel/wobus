@@ -8,14 +8,15 @@
     tools:layout_editor_absoluteY="81dp">
 
     <Button
-        android:id="@+id/showAllBusLinesButton"
+        android:id="@+id/showOnMapButton"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_marginBottom="32dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
-        android:onClick="showTransitLineDetails"
-        android:text="@string/button_show_transit_lines"
+        android:enabled="false"
+        android:onClick="showMap"
+        android:text="@string/button_show_on_map"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/viewPager" />
@@ -30,7 +31,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/button_scrape"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/showAllBusLinesButton"
+        app:layout_constraintEnd_toStartOf="@+id/showOnMapButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/viewPager" />
 

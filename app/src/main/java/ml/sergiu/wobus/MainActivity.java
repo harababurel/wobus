@@ -1,5 +1,6 @@
 package ml.sergiu.wobus;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -39,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ViewPager pager = (ViewPager) findViewById(R.id.viewPager);
         pagerAdapter = new TabsPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
-
     }
 
     public void onClick(View view) {
@@ -50,6 +50,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
+//    /** Called when the user taps the "Show on map" button */
+//    public void showMap(View view) {
+//        Intent intent = new Intent(this, MapsActivity.class);
+//        String message = "haha";
+
+//        intent.putExtra("tag", message);
+//        startActivity(intent);
+//    }
 
     public static class TransitDetailsFragment extends Fragment {
         public static TransitDetailsFragment newInstance(TransitLine line) {
@@ -169,6 +178,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             );
             pagerAdapter.notifyDataSetChanged();
             Log.i("BOBS", "Done creating fragments");
+
+            Button show_on_map = (Button) findViewById(R.id.showOnMapButton);
+            show_on_map.setEnabled(true);
         }
 
         @Override
