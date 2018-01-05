@@ -9,13 +9,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class CTPScraper {
     private static CTPScraper instance = null;
@@ -89,7 +84,7 @@ public class CTPScraper {
             String name = doc.select("h1[class^=TzArticleTitle]").first().text();
             ret.get().name = name;
 
-            ScrapeOrar(name, uri);
+            ScrapeOrar(name, uri, ret.get());
 
             try {
                 String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
@@ -106,7 +101,7 @@ public class CTPScraper {
         return ret;
     }
 
-    public void ScrapeOrar(String line_name, URI page_uri) {
+    public void ScrapeOrar(String line_name, URI page_uri, TransitLine line) {
         String[] parts = line_name.split(" ");
         String line_number = parts[parts.length - 1];
 
@@ -124,13 +119,46 @@ public class CTPScraper {
                 today = "lv";
         }
 
+        String orar_filename = "orare/orar_" + line_number + "_" + today + ".csv";
         try {
-            InputStream is = assetManager.open("orare/orar_100L_lv.csv");
-        } catch(Exception e) {
-            Log.e("ORAR", "could not open asset; reason: " + e.toString());
+            InputStreamReader strim = new InputStreamReader(assetManager.open(orar_filename),
+                    "UTF-8");
+
+            BufferedReader reader = new BufferedReader(strim);
+
+            String s;
+            for (int i = 0; i < 5; i++) {
+                reader.readLine();
+            }
+
+            DateFormat fmt = new SimpleDateFormat("hh:mm");
+            while ((s = reader.readLine()) != null) {
+                String[] times;
+                try {
+                    times = s.split(",");
+                } catch (Exception e) {
+                    Log.e("ORAR", "could not split orar line: \"" + s + "\"");
+                    continue;
+                }
+
+                try {
+                    line.departuresA.add(fmt.parse(times[0]));
+                } catch (Exception e) {
+                    Log.e("ORAR", "could not add departureA time = \"" + times[0] + "\": " + e
+                            .toString());
+                }
+
+                try {
+                    line.departuresB.add(fmt.parse(times[1]));
+                } catch (Exception e) {
+                    Log.e("ORAR", "could not add departureB time = \"" + times[1] + "\": " + e
+                            .toString());
+                }
+            }
+        } catch (Exception e) {
+            Log.e("ORAR", "could not open asset \"" + orar_filename + "\"; reason: " + e
+                    .toString());
         }
-
-
 
 
 //        URL csv_uri;

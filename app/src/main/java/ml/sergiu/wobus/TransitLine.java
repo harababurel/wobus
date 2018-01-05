@@ -2,6 +2,9 @@ package ml.sergiu.wobus;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,12 +14,15 @@ public class TransitLine implements Serializable {
     private URI mapImageURI;
     public TransitType type;
     public String endA, endB;
-    List<String> departuresA, departuresB;
+    List<Date> departuresA, departuresB;
 
     public TransitLine(String name, URI uri) {
         this.name = name;
         this.uri = uri;
         this.mapImageURI = null;
+
+        departuresA = new LinkedList<>();
+        departuresB = new LinkedList<>();
     }
 
     @Override
