@@ -21,6 +21,8 @@ import android.widget.TextView;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,8 +64,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TransitLine current_line = ctpScraper.busLines().get(pager.getCurrentItem());
         Log.i("BOBS", "Currently selected transit line: " + current_line.toString());
 
+        Date now = Calendar.getInstance().getTime();
+        Date closest_prev_time_a = null;
+        Date closest_prev_time_b = null;
 
+        for(Date x:current_line.departuresA) {
+            if(x.compareTo(now) <= 0) {
+                closest_prev_time_a = x;
+            }
+        }
+
+        for(Date x:current_line.departuresB) {
+            if(x.compareTo(now) <= 0) {
+                closest_prev_time_b = x;
+            }
+        }
         intent.putExtra("current_line", current_line);
+        intent.putExtra("closest_prev_time_a", closest_prev_time_a);
+        intent.putExtra("closest_prev_time_b", closest_prev_time_b);
 
         startActivity(intent);
     }
