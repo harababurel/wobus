@@ -6,13 +6,21 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class CTPScraper {
     private static CTPScraper instance = null;
@@ -48,7 +56,7 @@ public class CTPScraper {
             Document doc = Jsoup.connect(baseURI.toString()).get();
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
-            lines.stream().limit(5).forEach(line -> {
+            lines.stream().limit(10).forEach(line -> {
                 URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
                 Log.i("BOBS", transitLineURI.toString());
@@ -75,6 +83,8 @@ public class CTPScraper {
             String name = doc.select("h1[class^=TzArticleTitle]").first().text();
             ret.get().name = name;
 
+            ScrapeOrar(name, uri);
+
             try {
                 String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
                 ret.get().setMapImageURI(new URI("http://ctpcj.ro" + mapImageURI));
@@ -88,6 +98,73 @@ public class CTPScraper {
         }
 
         return ret;
+    }
+
+    public void ScrapeOrar(String line_name, URI page_uri) {
+        String[] parts = line_name.split(" ");
+        String line_number = parts[parts.length - 1];
+
+        String today = (new SimpleDateFormat("E")).format(Calendar.getInstance().getTime());
+        Log.i("ORAR", "today = " + today);
+
+        switch (today) {
+            case "Sat":
+                today = "s";
+                break;
+            case "Sun":
+                today = "d";
+                break;
+            default:
+                today = "lv";
+        }
+
+
+//        URL csv_uri;
+//        try {
+//            csv_uri = new URL("http://www.ctpcj.ro/orare/csv/orar_" + line_number + "_" + today +
+//                    "" +
+//                    ".csv");
+//        } catch (MalformedURLException e) {
+//            Log.e("ORAR", "could not construct csv_uri: " + e.toString());
+//            return;
+//        }
+//
+//        Log.d("ORAR", "URL is " + csv_uri.toString());
+//
+//        try {
+//            HttpURLConnection connection = (HttpURLConnection) csv_uri.openConnection();
+//            URLConnection con = (URLConnection) csv_uri.openConnection();
+//
+//            con.connect();
+//
+//
+//            Log.d("ORAR", con.getContent().toString());
+
+
+//            if (con.getResponseCode() == 200) {
+//                try (InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
+//                     BufferedReader br = new BufferedReader(streamReader);
+//                     Stream<String> lines = br.lines()) {
+//                    lines.forEach(s -> Log.i("ORAR", "read line: " + s));
+//                } catch (Exception e) {
+//                    Log.e("ORAR", "could not read orar from csv: " + e.toString());
+//                }
+//            } else {
+//                Log.w("ORAR", "Response code is " + connection.getResponseCode());
+//            }
+//
+//        } catch (Exception e) {
+//            Log.e("ORAR", "could not open connection to " + csv_uri.toString());
+//            Log.e("ORAR", "reason: " + e.toString());
+//        }
+
+
+//        try {
+//            Document doc = Jsoup.connect(csv_uri.toString()).get();
+//        } catch (Exception e) {
+//            Log.e("ORAR", "could not get orar from " + csv_uri);
+//            Log.e("ORAR", "reason: " + e.toString());
+//        }
     }
 
     public void AddOrUpdateBusLine(TransitLine transitLine) {
