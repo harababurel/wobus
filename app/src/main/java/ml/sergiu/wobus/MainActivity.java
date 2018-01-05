@@ -25,13 +25,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    public static final CTPScraper ctpScraper = CTPScraper.getInstance();
+    public CTPScraper ctpScraper;
     TabsPagerAdapter pagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ctpScraper = CTPScraper.getInstance(getApplicationContext());
 
         Button scrape_btn = (Button) findViewById(R.id.scrape_button);
         scrape_btn.setOnClickListener(this);

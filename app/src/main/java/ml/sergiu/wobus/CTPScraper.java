@@ -1,5 +1,7 @@
 package ml.sergiu.wobus;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import org.jsoup.Jsoup;
@@ -7,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -27,9 +30,10 @@ public class CTPScraper {
     private final URI baseURI;
     private final List<TransitLine> transitLines;
     private final Map<String, TransitLine> transitLinesMap;
+    private final AssetManager assetManager;
 
 
-    private CTPScraper() {
+    private CTPScraper(Context ctx) {
         // private in order to defeat instantiation.
 
         URI tmpURI = null;
@@ -41,11 +45,13 @@ public class CTPScraper {
         baseURI = tmpURI;
         transitLines = new ArrayList<>();
         transitLinesMap = new HashMap<>();
+
+        assetManager = ctx.getAssets();
     }
 
-    public static CTPScraper getInstance() {
+    public static CTPScraper getInstance(Context ctx) {
         if (instance == null) {
-            instance = new CTPScraper();
+            instance = new CTPScraper(ctx);
         }
         return instance;
     }
@@ -117,6 +123,14 @@ public class CTPScraper {
             default:
                 today = "lv";
         }
+
+        try {
+            InputStream is = assetManager.open("orare/orar_100L_lv.csv");
+        } catch(Exception e) {
+            Log.e("ORAR", "could not open asset; reason: " + e.toString());
+        }
+
+
 
 
 //        URL csv_uri;
