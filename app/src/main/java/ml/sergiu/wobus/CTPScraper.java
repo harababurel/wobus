@@ -64,14 +64,15 @@ public class CTPScraper {
             Document doc = Jsoup.connect(baseURI.toString()).get();
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
-            lines.stream().filter(line -> line.text() == "24B").forEach(line -> {
+            lines.stream().forEach(line -> {
                 URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
                 Log.i("BOBS", transitLineURI.toString());
 
                 Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
 
-                if (transitLine.isPresent()) {
+
+                if (transitLine.isPresent() && transitLine.get().name.equals("Line 24B")) {
                     AddOrUpdateBusLine(transitLine.get());
                 }
             });
@@ -92,6 +93,7 @@ public class CTPScraper {
             ret.get().name = name;
 
             ScrapeOrar(name, uri, ret.get());
+            LoadRoute(name);
 
             try {
                 String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
@@ -145,7 +147,29 @@ public class CTPScraper {
     }
 
     public void LoadRoute(String line_name) {
+        String line_number = line_name.split(" ")[1];
+        BufferedReader reader = null;
+        try {
+            InputStreamReader strim = new InputStreamReader(assetManager.open("buses/" + line_number), "UTF-8");
+            reader = new BufferedReader(strim);
+        } catch (Exception e) {
+            Log.e("ROUTE", e.toString());
+            return;
+        }
 
+        String s = null;
+        while (true) {
+            try {
+                s = reader.readLine();
+            } catch (Exception e) {
+                Log.e("ROUTE", e.toString());
+            }
+            if (s == null) {
+                break;
+            }
+
+            getBusLine(line_number).get().routeAB.add(transitStopsMap.get(s));
+        }
 
     }
 
@@ -258,8 +282,13 @@ public class CTPScraper {
     }
 
     public void AddOrUpdateBusLine(TransitLine transitLine) {
-        transitLines.add(transitLine);
-        transitLinesMap.put(transitLine.name, transitLine);
+        if (transitLinesMap.containsKey(transitLine.name)) {
+            transitLines.set(transitLines.indexOf(transitLine), transitLine);
+            transitLinesMap.put(transitLine.name, transitLine);
+        } else {
+            transitLines.add(transitLine);
+            transitLinesMap.put(transitLine.name, transitLine);
+        }
     }
 
     public Optional<TransitLine> getBusLine(String name) {
