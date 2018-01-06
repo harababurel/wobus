@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+import com.google.maps.model.LatLng;
+import com.opencsv.CSVReader;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -25,6 +28,7 @@ public class CTPScraper {
     private final URI baseURI;
     private final List<TransitLine> transitLines;
     private final Map<String, TransitLine> transitLinesMap;
+    private final Map<String, TransitStop> transitStopsMap;
     private final AssetManager assetManager;
 
 
@@ -40,8 +44,10 @@ public class CTPScraper {
         baseURI = tmpURI;
         transitLines = new ArrayList<>();
         transitLinesMap = new HashMap<>();
+        transitStopsMap = new HashMap<>();
 
         assetManager = ctx.getAssets();
+
     }
 
     public static CTPScraper getInstance(Context ctx) {
@@ -52,12 +58,13 @@ public class CTPScraper {
     }
 
     public void Scrape() {
+        LoadStops();
         try {
             Log.i("BOBS", "Opening doc = \"" + baseURI + "\".");
             Document doc = Jsoup.connect(baseURI.toString()).get();
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
-            lines.stream().limit(10).forEach(line -> {
+            lines.stream().filter(line -> line.text() == "24B").forEach(line -> {
                 URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
                 Log.i("BOBS", transitLineURI.toString());
@@ -99,6 +106,47 @@ public class CTPScraper {
         }
 
         return ret;
+    }
+
+    public void LoadStops() {
+        CSVReader reader;
+        try {
+            reader = new CSVReader(new InputStreamReader(assetManager.open("stops.csv"),
+                    "UTF-8"));
+        } catch (Exception e) {
+            Log.e("STOPS", "Could not open asset file: " + e.toString());
+            return;
+        }
+
+
+        String[] s = null;
+        while (true) {
+            try {
+                s = reader.readNext();
+                if (s == null) {
+                    break;
+                }
+            } catch (Exception e) {
+                Log.e("STOPS", e.toString());
+            }
+
+            Log.i("STOPS", "Found stop \"" + s[0] + "\" with coordinates (" +
+                    s[1] + ", " + s[2] + ").");
+
+            try {
+                String stop_name = s[0];
+                double lat = Double.parseDouble(s[1]);
+                double lng = Double.parseDouble(s[2]);
+                transitStopsMap.put(stop_name, new TransitStop(stop_name, new LatLng(lat, lng)));
+            } catch (Exception e) {
+                Log.e("STOPS", "Could not parse stop line: " + e.toString());
+            }
+        }
+    }
+
+    public void LoadRoute(String line_name) {
+
+
     }
 
     public void ScrapeOrar(String line_name, URI page_uri, TransitLine line) {

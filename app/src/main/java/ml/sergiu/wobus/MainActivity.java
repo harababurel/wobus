@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public CTPScraper ctpScraper;
@@ -58,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void showMap(View view) {
         Intent intent = new Intent(this, MapsActivity.class);
 
-
         ViewPager pager = (ViewPager) findViewById(R.id.viewPager);
 
         TransitLine current_line = ctpScraper.busLines().get(pager.getCurrentItem());
@@ -68,14 +66,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Date closest_prev_time_a = null;
         Date closest_prev_time_b = null;
 
-        for(Date x:current_line.departuresA) {
-            if(x.compareTo(now) <= 0) {
+        for (Date x : current_line.departuresA) {
+            if (x.compareTo(now) <= 0) {
                 closest_prev_time_a = x;
             }
         }
 
-        for(Date x:current_line.departuresB) {
-            if(x.compareTo(now) <= 0) {
+        for (Date x : current_line.departuresB) {
+            if (x.compareTo(now) <= 0) {
                 closest_prev_time_b = x;
             }
         }

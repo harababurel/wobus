@@ -16,6 +16,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,18 +30,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
 //    private LocationManager locationManager;
 //    private Marker marker;
-
-
-    public void setAnimation(final List<LatLng> directionPoint) {
-        Marker marker = mMap.addMarker(new MarkerOptions()
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_bus_marker))
-                .position(directionPoint.get(0))
-                .flat(true));
-
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(directionPoint.get(0), 10));
-        animateMarker(mMap, marker, directionPoint, false);
-    }
-
 
     private static void animateMarker(GoogleMap myMap, final Marker marker, final List<LatLng> directionPoint,
                                       final boolean hideMarker) {
@@ -78,6 +68,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    public void setAnimation(final List<LatLng> directionPoint) {
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_bus_marker))
+                .position(directionPoint.get(0))
+                .flat(true));
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(directionPoint.get(0), 10));
+        animateMarker(mMap, marker, directionPoint, false);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +104,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         points.add(new LatLng(46.7712, 23.6236));
         points.add(new LatLng(47.1855, 23.0573));
         setAnimation(points);
+
+
+        // Instantiates a new Polyline object and adds points to define a rectangle
+        PolylineOptions rectOptions = new PolylineOptions()
+                .add(new LatLng(37.35, -122.0))
+                .add(new LatLng(37.45, -122.0))  // North of the previous point, but at the same longitude
+                .add(new LatLng(37.45, -122.2))  // Same latitude, and 30km to the west
+                .add(new LatLng(37.35, -122.2))  // Same longitude, and 16km to the south
+                .add(new LatLng(37.35, -122.0)); // Closes the polyline.
+
+// Get back the mutable Polyline
+        Polyline polyline = mMap.addPolyline(rectOptions);
+
     }
 
 //    @Override

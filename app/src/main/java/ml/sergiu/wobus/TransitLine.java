@@ -15,6 +15,8 @@ public class TransitLine implements Serializable {
     public TransitType type;
     public String endA, endB;
     List<Date> departuresA, departuresB;
+    List<TransitStop> routeAB;
+    List<TransitStop> routeBA;
 
     public TransitLine(String name, URI uri) {
         this.name = name;
@@ -23,6 +25,9 @@ public class TransitLine implements Serializable {
 
         departuresA = new LinkedList<>();
         departuresB = new LinkedList<>();
+
+        routeAB = new LinkedList<>();
+        routeBA = new LinkedList<>();
     }
 
     @Override
