@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 
@@ -106,16 +107,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setAnimation(points);
 
 
-        // Instantiates a new Polyline object and adds points to define a rectangle
-        PolylineOptions rectOptions = new PolylineOptions()
-                .add(new LatLng(37.35, -122.0))
-                .add(new LatLng(37.45, -122.0))  // North of the previous point, but at the same longitude
-                .add(new LatLng(37.45, -122.2))  // Same latitude, and 30km to the west
-                .add(new LatLng(37.35, -122.2))  // Same longitude, and 16km to the south
-                .add(new LatLng(37.35, -122.0)); // Closes the polyline.
+        PolylineOptions path = new PolylineOptions();
+        TransitLine currentLine = (TransitLine) getIntent().getSerializableExtra("current_line");
+
+        Log.i("MAP", "" + currentLine.routeAB.size());
+
+
+        for (TransitStop stop : currentLine.routeAB) {
+            path.add(new LatLng(stop.coords.lat, stop.coords.lng));
+
+            Log.i("MAP", "Added coordinates to polyline path: " + stop.coords);
+        }
 
 // Get back the mutable Polyline
-        Polyline polyline = mMap.addPolyline(rectOptions);
+        Polyline polyline = mMap.addPolyline(path);
 
     }
 

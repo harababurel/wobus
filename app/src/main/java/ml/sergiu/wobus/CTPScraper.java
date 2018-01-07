@@ -64,15 +64,15 @@ public class CTPScraper {
             Document doc = Jsoup.connect(baseURI.toString()).get();
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
-            lines.stream().forEach(line -> {
+
+            lines.stream().filter(line -> line.text().contains("24B") || line.text().contains("25")).forEach(line -> {
                 URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
                 Log.i("BOBS", transitLineURI.toString());
 
                 Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
 
-
-                if (transitLine.isPresent() && transitLine.get().name.equals("Line 24B")) {
+                if (transitLine.isPresent()) {
                     AddOrUpdateBusLine(transitLine.get());
                 }
             });
@@ -168,7 +168,8 @@ public class CTPScraper {
                 break;
             }
 
-            getBusLine(line_number).get().routeAB.add(transitStopsMap.get(s));
+            Log.i("ROUTE", "Adding stop " + s + " to line " + line_number);
+            getBusLine(line_name).get().routeAB.add(transitStopsMap.get(s));
         }
 
     }
