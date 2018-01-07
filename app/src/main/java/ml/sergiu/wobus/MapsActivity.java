@@ -1,5 +1,7 @@
 package ml.sergiu.wobus;
 
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -21,7 +23,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.SphericalUtil;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -111,8 +112,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setAnimation(points);
 
 
+        TransitLine current_line = (TransitLine) getIntent().getSerializableExtra("current_line");
+
+
+        drawVehicles(mMap, current_line, current_line.routeAB, current_line.departuresA);
+        drawVehicles(mMap, current_line, current_line.routeBA, current_line.departuresB);
         drawPath(mMap);
-        drawVehicles(mMap);
     }
 
     private void drawPath(GoogleMap mMap) {
@@ -128,33 +133,69 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Polyline polyline = mMap.addPolyline(path);
     }
 
-    private void drawVehicles(GoogleMap mMap) {
+    private void drawVehicles(GoogleMap mMap, TransitLine current_line, List<TransitStop> route,
+                              List<Date> departures) {
         TransitLine currentLine = (TransitLine) getIntent().getSerializableExtra("current_line");
 
         Date now = Calendar.getInstance().getTime();
-        for (Date departure : currentLine.departuresA) {
+//        for (Date departure : currentLine.departuresA) {
+        for (Date departure : departures) {
             if (departure.after(now)) {
                 continue;
             }
 
             double delta_hours = (Math.abs(now.getTime() - departure.getTime())) / 1000.0 / 60.0 / 60.0;
-            double speed_kmph = 30.0;
+            double speed_kmph = 19.6;
             double distance_km = speed_kmph * delta_hours;
+            double traveled = distance_km * 1000.0; // meters
 
             Log.i("MAP", "Bus departing at " + departure + " traveled " + distance_km + " km so" +
                     " far");
 
-            for (int i = 0; i + 1 < currentLine.routeAB.size(); i++) {
-                TransitStop current_stop = currentLine.routeAB.get(i);
-                TransitStop next_stop = currentLine.routeAB.get(i + 1);
+            for (int i = 0; i + 1 < route.size(); i++) {
+                TransitStop current_stop = route.get(i);
+                TransitStop next_stop = route.get(i + 1);
 
                 double distance = SphericalUtil.computeDistanceBetween(
                         new LatLng(current_stop.coords.lat, current_stop.coords.lng),
                         new LatLng(next_stop.coords.lat, next_stop.coords.lng));
 
-                Log.i("MAP", "Distance between " + current_stop.name + " and " + next_stop.name
-                        + " is " + new DecimalFormat("#0.00").format(distance) + " meters");
+//                Log.i("MAP", "Distance between " + current_stop.name + " and " + next_stop.name
+//                        + " is " + new DecimalFormat("#0.00").format(distance) + " meters");
 
+                if (traveled > distance) {
+                    traveled -= distance;
+                    continue;
+                } else {
+                    Log.i("MAP", "Bus is between " + current_stop.name + " and " + next_stop.name);
+
+                    LatLng current_position = SphericalUtil.interpolate(
+                            new LatLng(current_stop.coords.lat, current_stop.coords.lng),
+                            new LatLng(next_stop.coords.lat, next_stop.coords.lng),
+                            traveled / distance);
+
+
+
+                    // compute marker rotation
+                    Location x = new Location(LocationManager.GPS_PROVIDER);
+                    x.setLatitude(current_stop.coords.lat);
+                    x.setLongitude(current_stop.coords.lng);
+                    Location y = new Location(LocationManager.GPS_PROVIDER);
+                    y.setLatitude(next_stop.coords.lat);
+                    y.setLongitude(next_stop.coords.lng);
+                    float bearing = x.bearingTo(y);
+
+                    Log.i("MAP", "Bearing is: " + bearing);
+
+                    Log.i("MAP", "Exact location: " + current_position);
+                    mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable
+                                    .ic_red_bus_marker))
+                            .position(current_position)
+                            .rotation(bearing)
+                            .title(currentLine.name));
+                    break;
+                }
             }
 
         }
