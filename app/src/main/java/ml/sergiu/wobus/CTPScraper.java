@@ -18,6 +18,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,7 +216,14 @@ public class CTPScraper {
                 }
 
                 try {
-                    line.departuresA.add(fmt.parse(times[0]));
+
+                    Date tmp = fmt.parse(times[0]);
+                    Date t = Calendar.getInstance().getTime();
+                    t.setHours(tmp.getHours());
+                    t.setMinutes(tmp.getMinutes());
+
+                    line.departuresA.add(t);
+//                    line.departuresA.add(fmt.parse(times[0]));
                 } catch (Exception e) {
                     Log.e("ORAR", "could not add departureA time = \"" + times[0] + "\": " + e
                             .toString());
@@ -232,6 +240,7 @@ public class CTPScraper {
             Log.e("ORAR", "could not open asset \"" + orar_filename + "\"; reason: " + e
                     .toString());
         }
+
 
 
 //        URL csv_uri;

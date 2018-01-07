@@ -19,8 +19,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.android.SphericalUtil;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 // https://stackoverflow.com/questions/33885378/animate-a-carmarker-along-a-path-in-google-map-android
@@ -107,22 +111,56 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setAnimation(points);
 
 
+        drawPath(mMap);
+        drawVehicles(mMap);
+    }
+
+    private void drawPath(GoogleMap mMap) {
         PolylineOptions path = new PolylineOptions();
         TransitLine currentLine = (TransitLine) getIntent().getSerializableExtra("current_line");
-
         Log.i("MAP", "" + currentLine.routeAB.size());
-
 
         for (TransitStop stop : currentLine.routeAB) {
             path.add(new LatLng(stop.coords.lat, stop.coords.lng));
-
             Log.i("MAP", "Added coordinates to polyline path: " + stop.coords);
         }
 
-// Get back the mutable Polyline
         Polyline polyline = mMap.addPolyline(path);
+    }
+
+    private void drawVehicles(GoogleMap mMap) {
+        TransitLine currentLine = (TransitLine) getIntent().getSerializableExtra("current_line");
+
+        Date now = Calendar.getInstance().getTime();
+        for (Date departure : currentLine.departuresA) {
+            if (departure.after(now)) {
+                continue;
+            }
+
+            double delta_hours = (Math.abs(now.getTime() - departure.getTime())) / 1000.0 / 60.0 / 60.0;
+            double speed_kmph = 30.0;
+            double distance_km = speed_kmph * delta_hours;
+
+            Log.i("MAP", "Bus departing at " + departure + " traveled " + distance_km + " km so" +
+                    " far");
+
+            for (int i = 0; i + 1 < currentLine.routeAB.size(); i++) {
+                TransitStop current_stop = currentLine.routeAB.get(i);
+                TransitStop next_stop = currentLine.routeAB.get(i + 1);
+
+                double distance = SphericalUtil.computeDistanceBetween(
+                        new LatLng(current_stop.coords.lat, current_stop.coords.lng),
+                        new LatLng(next_stop.coords.lat, next_stop.coords.lng));
+
+                Log.i("MAP", "Distance between " + current_stop.name + " and " + next_stop.name
+                        + " is " + new DecimalFormat("#0.00").format(distance) + " meters");
+
+            }
+
+        }
 
     }
+
 
 //    @Override
 //    public void onMapReady(GoogleMap googleMap) {
