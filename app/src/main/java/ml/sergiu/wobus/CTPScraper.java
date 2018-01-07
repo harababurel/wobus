@@ -149,9 +149,20 @@ public class CTPScraper {
 
     public void LoadRoute(String line_name) {
         String line_number = line_name.split(" ")[1];
+
+        LoadDirectedRoute(line_name, line_number, false);
+        LoadDirectedRoute(line_name, line_number, true);
+    }
+
+    private void LoadDirectedRoute(String line_name, String line_number, boolean reverse) {
         BufferedReader reader = null;
         try {
-            InputStreamReader strim = new InputStreamReader(assetManager.open("buses/" + line_number), "UTF-8");
+
+            String path = "buses/" + line_number;
+            if(reverse) {
+                path += "_reverse";
+            }
+            InputStreamReader strim = new InputStreamReader(assetManager.open(path), "UTF-8");
             reader = new BufferedReader(strim);
         } catch (Exception e) {
             Log.e("ROUTE", e.toString());
@@ -170,7 +181,12 @@ public class CTPScraper {
             }
 
             Log.i("ROUTE", "Adding stop " + s + " to line " + line_number);
-            getBusLine(line_name).get().routeAB.add(transitStopsMap.get(s));
+
+            if(reverse) {
+                getBusLine(line_name).get().routeBA.add(transitStopsMap.get(s));
+            } else {
+                getBusLine(line_name).get().routeAB.add(transitStopsMap.get(s));
+            }
         }
 
     }
@@ -216,21 +232,24 @@ public class CTPScraper {
                 }
 
                 try {
-
                     Date tmp = fmt.parse(times[0]);
                     Date t = Calendar.getInstance().getTime();
                     t.setHours(tmp.getHours());
                     t.setMinutes(tmp.getMinutes());
 
                     line.departuresA.add(t);
-//                    line.departuresA.add(fmt.parse(times[0]));
                 } catch (Exception e) {
                     Log.e("ORAR", "could not add departureA time = \"" + times[0] + "\": " + e
                             .toString());
                 }
 
                 try {
-                    line.departuresB.add(fmt.parse(times[1]));
+                    Date tmp = fmt.parse(times[1]);
+                    Date t = Calendar.getInstance().getTime();
+                    t.setHours(tmp.getHours());
+                    t.setMinutes(tmp.getMinutes());
+
+                    line.departuresB.add(t);
                 } catch (Exception e) {
                     Log.e("ORAR", "could not add departureB time = \"" + times[1] + "\": " + e
                             .toString());
