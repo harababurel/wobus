@@ -21,6 +21,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static com.google.android.gms.maps.model.JointType.BEVEL;
+import static com.google.android.gms.maps.model.JointType.ROUND;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 //    private GoogleMap mMap;
 
@@ -55,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void drawPath(GoogleMap mMap, List<TransitStop> route) {
         PolylineOptions path = new PolylineOptions();
-        Log.i("MAP", "" + route.size());
+        Log.i("MAP", "Polyline has " + route.size() + " points");
 
         for (TransitStop stop : route) {
             path.add(new LatLng(stop.coords.lat, stop.coords.lng));
@@ -63,6 +66,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         path.color(0xAA4885ed); // google blue, partially transparent
+        path.jointType(ROUND);
         Polyline polyline = mMap.addPolyline(path);
     }
 

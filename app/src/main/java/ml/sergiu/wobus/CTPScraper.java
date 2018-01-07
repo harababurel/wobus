@@ -60,6 +60,7 @@ public class CTPScraper {
 
     public void Scrape() {
         LoadStops();
+
         try {
             Log.i("BOBS", "Opening doc = \"" + baseURI + "\".");
             Document doc = Jsoup.connect(baseURI.toString()).get();
@@ -75,10 +76,13 @@ public class CTPScraper {
 
                 if (transitLine.isPresent()) {
                     AddOrUpdateBusLine(transitLine.get());
+                    ScrapeOrar(transitLine.get().name, transitLineURI, transitLine.get());
+                    LoadRoute(transitLine.get().name);
                 }
             });
         } catch (Exception e) {
-            Log.e("BOBS", "could not scrape" + baseURI);
+            Log.e("BOBS", "could not scrape " + baseURI);
+            Log.e("BOBS", "reason: " + e.toString());
         }
     }
 
@@ -88,13 +92,9 @@ public class CTPScraper {
         try {
             Document doc = Jsoup.connect(uri.toString()).get();
             ret = Optional.of(new TransitLine("", null));
-//            Log.i("BOBS", doc.html());
 
             String name = doc.select("h1[class^=TzArticleTitle]").first().text();
             ret.get().name = name;
-
-            ScrapeOrar(name, uri, ret.get());
-            LoadRoute(name);
 
             try {
                 String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
@@ -152,14 +152,14 @@ public class CTPScraper {
 
         LoadDirectedRoute(line_name, line_number, false);
         LoadDirectedRoute(line_name, line_number, true);
+
     }
 
     private void LoadDirectedRoute(String line_name, String line_number, boolean reverse) {
         BufferedReader reader = null;
         try {
-
             String path = "buses/" + line_number;
-            if(reverse) {
+            if (reverse) {
                 path += "_reverse";
             }
             InputStreamReader strim = new InputStreamReader(assetManager.open(path), "UTF-8");
@@ -182,10 +182,18 @@ public class CTPScraper {
 
             Log.i("ROUTE", "Adding stop " + s + " to line " + line_number);
 
-            if(reverse) {
-                getBusLine(line_name).get().routeBA.add(transitStopsMap.get(s));
+            TransitStop stop = null;
+            try {
+                Log.d("ROUTE", "Getting transitStop \"" + s + "\" from transitStopsMap.");
+                stop = transitStopsMap.get(s);
+            } catch (Exception e) {
+                Log.d("ROUTE", "transitStop \"" + s + "\" is not in transitStopsMap!!!");
+            }
+
+            if (reverse) {
+                getBusLine(line_name).get().routeBA.add(stop);
             } else {
-                getBusLine(line_name).get().routeAB.add(transitStopsMap.get(s));
+                getBusLine(line_name).get().routeAB.add(stop);
             }
         }
 
@@ -259,7 +267,6 @@ public class CTPScraper {
             Log.e("ORAR", "could not open asset \"" + orar_filename + "\"; reason: " + e
                     .toString());
         }
-
 
 
 //        URL csv_uri;
