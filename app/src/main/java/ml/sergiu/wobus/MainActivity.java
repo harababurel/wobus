@@ -89,13 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TransitDetailsFragment f = new TransitDetailsFragment();
             // Supply index input as an argument.
             Bundle args = new Bundle();
-            args.putString("name", line.name);
-
-            if (line.getMapImageURI().isPresent()) {
-                args.putString("map_image_uri", line.getMapImageURI().get().toString());
-                line.setMapImageURI(null); // don't download the image again
-            }
-
+            args.putSerializable("current_line", line);
             f.setArguments(args);
             return f;
         }
@@ -105,21 +99,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             View view = inflater.inflate(R.layout.transit_details_fragment, container, false);
 
             Bundle args = getArguments();
-            String name = args.getString("name");
 
+            TransitLine current_line = (TransitLine) args.getSerializable("current_line");
             ImageView map_image = view.findViewById(R.id.map_image);
 
+
+//            if (!current_line.getMapImage().isPresent()) {
+//                current_line.DownloadMapImage();
+//            }
+
+//            if (current_line.getMapImage().isPresent()) {
+//                map_image.setImageBitmap(current_line.getMapImage().get());
+//            }
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            Bitmap bitmap;
             try {
-                String map_image_uri = args.getString("map_image_uri");
-                Log.i("BOBS", "image uri is " + map_image_uri);
-                new DownloadImageTask(map_image).execute(map_image_uri);
+                bitmap = BitmapFactory.decodeStream(
+                        getContext().getAssets().open(current_line.mapImagePath()));
+                map_image.setImageBitmap(bitmap);
             } catch (Exception e) {
-                Log.e("BOBS", e.toString());
+                Log.e("BOBS", "map image path", e);
             }
 
-            TextView line_number_label = (TextView) view.findViewById(R.id.line_number_label);
-            line_number_label.setText(name);
 
+            TextView line_number_label = (TextView) view.findViewById(R.id.line_number_label);
+            line_number_label.setText(current_line.name);
 
             return view;
         }
@@ -150,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bmImage.setImageBitmap(result);
         }
     }
+
 
     public class TabsPagerAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments = new ArrayList<>();

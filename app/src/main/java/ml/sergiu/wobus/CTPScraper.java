@@ -74,15 +74,15 @@ public class CTPScraper {
 
                 Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
 
-                if (transitLine.isPresent()) {
-                    AddOrUpdateBusLine(transitLine.get());
+                if (transitLine.isPresent() && !getBusLine(transitLine.get().name).isPresent()) {
+                    AddBusLine(transitLine.get());
                     ScrapeOrar(transitLine.get().name, transitLineURI, transitLine.get());
                     LoadRoute(transitLine.get().name);
                 }
             });
         } catch (Exception e) {
             Log.e("BOBS", "could not scrape " + baseURI);
-            Log.e("BOBS", "reason: " + e.toString());
+            Log.e("BOBS", "reason: " + e.toString(), e);
         }
     }
 
@@ -93,19 +93,20 @@ public class CTPScraper {
             Document doc = Jsoup.connect(uri.toString()).get();
             ret = Optional.of(new TransitLine("", null));
 
-            String name = doc.select("h1[class^=TzArticleTitle]").first().text();
+            String name = doc.select("h1[class^=TzArticleTitle]").first().text().split(" ")[1];
+            Log.d("NAME", name);
             ret.get().name = name;
 
-            try {
-                String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
-                ret.get().setMapImageURI(new URI("http://ctpcj.ro" + mapImageURI));
-            } catch (Exception e) {
-                Log.i("BOBS", "Line " + uri.toString() + " has no map; skipping");
-                Log.i("BOBS", "Exception: " + e);
-            }
+//            try {
+//                String mapImageURI = doc.select("a[href^=/orare/harta]").first().attr("href").toString();
+//                ret.get().setMapImageURI(new URI("http://ctpcj.ro" + mapImageURI));
+//            } catch (Exception e) {
+//                Log.i("BOBS", "Line " + uri.toString() + " has no map; skipping");
+//                Log.i("BOBS", "Exception: " + e);
+//            }
         } catch (Exception e) {
             Log.e("BOBS", "could not scrape " + uri);
-            Log.e("BOBS", "reason: " + e);
+            Log.e("BOBS", "reason: " + e, e);
         }
 
         return ret;
@@ -148,17 +149,14 @@ public class CTPScraper {
     }
 
     public void LoadRoute(String line_name) {
-        String line_number = line_name.split(" ")[1];
-
-        LoadDirectedRoute(line_name, line_number, false);
-        LoadDirectedRoute(line_name, line_number, true);
-
+        LoadDirectedRoute(line_name, false);
+        LoadDirectedRoute(line_name, true);
     }
 
-    private void LoadDirectedRoute(String line_name, String line_number, boolean reverse) {
+    private void LoadDirectedRoute(String line_name, boolean reverse) {
         BufferedReader reader = null;
         try {
-            String path = "buses/" + line_number;
+            String path = "buses/" + line_name;
             if (reverse) {
                 path += "_reverse";
             }
@@ -180,7 +178,7 @@ public class CTPScraper {
                 break;
             }
 
-            Log.i("ROUTE", "Adding stop " + s + " to line " + line_number);
+            Log.i("ROUTE", "Adding stop " + s + " to line " + line_name);
 
             TransitStop stop = null;
             try {
@@ -200,9 +198,6 @@ public class CTPScraper {
     }
 
     public void ScrapeOrar(String line_name, URI page_uri, TransitLine line) {
-        String[] parts = line_name.split(" ");
-        String line_number = parts[parts.length - 1];
-
         String today = (new SimpleDateFormat("E")).format(Calendar.getInstance().getTime());
         Log.i("ORAR", "today = " + today);
 
@@ -217,7 +212,7 @@ public class CTPScraper {
                 today = "lv";
         }
 
-        String orar_filename = "orare/orar_" + line_number + "_" + today + ".csv";
+        String orar_filename = "orare/orar_" + line_name + "_" + today + ".csv";
         try {
             InputStreamReader strim = new InputStreamReader(assetManager.open(orar_filename),
                     "UTF-8");
@@ -317,11 +312,8 @@ public class CTPScraper {
 //        }
     }
 
-    public void AddOrUpdateBusLine(TransitLine transitLine) {
-        if (transitLinesMap.containsKey(transitLine.name)) {
-            transitLines.set(transitLines.indexOf(transitLine), transitLine);
-            transitLinesMap.put(transitLine.name, transitLine);
-        } else {
+    public void AddBusLine(TransitLine transitLine) {
+        if (!transitLinesMap.containsKey(transitLine.name)) {
             transitLines.add(transitLine);
             transitLinesMap.put(transitLine.name, transitLine);
         }
