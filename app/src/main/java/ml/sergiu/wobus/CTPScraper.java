@@ -67,7 +67,8 @@ public class CTPScraper {
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
 
-            lines.stream().filter(line -> line.text().contains("24B") || line.text().contains("25")).forEach(line -> {
+            lines.stream().filter(line -> line.text().contains("24B") || line.text().contains
+                    ("25") || line.text().contains(" 6")).forEach(line -> {
                 URI transitLineURI = baseURI.resolve(line.attr("href"));
                 Log.i("BOBS", line.text());
                 Log.i("BOBS", transitLineURI.toString());
