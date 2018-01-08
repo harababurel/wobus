@@ -127,6 +127,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             TextView line_number_label = (TextView) view.findViewById(R.id.line_number_label);
             line_number_label.setText(current_line.name);
 
+
+            TextView line_ends_label = (TextView) view.findViewById(R.id.line_ends_label);
+            line_ends_label.setText(current_line.endA().name + " - " + current_line.endB().name);
+
             return view;
         }
     }

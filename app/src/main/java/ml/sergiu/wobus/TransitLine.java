@@ -18,7 +18,7 @@ public class TransitLine implements Serializable {
     public String name;
     public URI uri;
     public TransitType type;
-    public String endA, endB;
+//    public String endA, endB;
     List<Date> departuresA, departuresB;
     List<TransitStop> routeAB;
     List<TransitStop> routeBA;
@@ -50,6 +50,14 @@ public class TransitLine implements Serializable {
 
     public String mapImagePath() {
         return "maps/" + name + ".jpeg";
+    }
+
+    public TransitStop endA() {
+        return routeAB.get(0);
+    }
+
+    public TransitStop endB() {
+        return routeBA.get(0);
     }
 
     public void requestAccurateRoute(GeoApiContext context) {

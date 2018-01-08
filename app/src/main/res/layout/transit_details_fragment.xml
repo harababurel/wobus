@@ -14,9 +14,19 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="37dp"
         android:text="1"
         android:textSize="40dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/line_ends_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/line_number_label"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:text="1"
+        android:textSize="20dp"
         android:textStyle="bold" />
 
     <ImageView
