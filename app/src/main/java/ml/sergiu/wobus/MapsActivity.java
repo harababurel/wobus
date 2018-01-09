@@ -151,6 +151,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     .ic_red_bus_marker))
                             .position(current_position)
                             .rotation(bearing)
+                            .anchor(0.5f, 0.5f)
                             .flat(true)
                             .title(current_line.name));
                     break;

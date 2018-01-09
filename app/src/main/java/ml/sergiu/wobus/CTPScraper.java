@@ -67,20 +67,21 @@ public class CTPScraper {
             Log.i("BOBS", "Doc opened.");
             Elements lines = doc.select("a[href^=/index.php/en/timetables/urban-lines/lin]");
 
-            lines.stream().filter(line -> line.text().contains("24B") || line.text().contains
-                    ("25") || line.text().contains(" 6")).forEach(line -> {
-                URI transitLineURI = baseURI.resolve(line.attr("href"));
-                Log.i("BOBS", line.text());
-                Log.i("BOBS", transitLineURI.toString());
+            lines.stream().filter(line -> line.text().equals("Line 24B") || line.text().equals
+                    ("Line 25") || line.text().equals("Line 6") || line.text().equals("Line 3"))
+                    .forEach(line -> {
+                        URI transitLineURI = baseURI.resolve(line.attr("href"));
+                        Log.i("BOBS", line.text());
+                        Log.i("BOBS", transitLineURI.toString());
 
-                Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
+                        Optional<TransitLine> transitLine = ScrapeTransitLinePage(transitLineURI);
 
-                if (transitLine.isPresent() && !getBusLine(transitLine.get().name).isPresent()) {
-                    AddBusLine(transitLine.get());
-                    ScrapeOrar(transitLine.get().name, transitLineURI, transitLine.get());
-                    LoadRoute(transitLine.get().name);
-                }
-            });
+                        if (transitLine.isPresent() && !getBusLine(transitLine.get().name).isPresent()) {
+                            AddBusLine(transitLine.get());
+                            ScrapeOrar(transitLine.get().name, transitLineURI, transitLine.get());
+                            LoadRoute(transitLine.get().name);
+                        }
+                    });
         } catch (Exception e) {
             Log.e("BOBS", "could not scrape " + baseURI);
             Log.e("BOBS", "reason: " + e.toString(), e);

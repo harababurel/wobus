@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.wang.avi.AVLoadingIndicatorView;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -214,13 +216,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.i("BOBS", "Done creating fragments");
 
             Button show_on_map = (Button) findViewById(R.id.showOnMapButton);
-            show_on_map.setEnabled(true);
+            show_on_map.setVisibility(View.VISIBLE);
+
+            AVLoadingIndicatorView indicator_view = (AVLoadingIndicatorView) findViewById(R.id.loadingIndicator);
+            indicator_view.hide();
         }
 
         @Override
         protected void onPreExecute() {
 //            EditText scraperDebugText = (EditText) findViewById(R.id.scraperDebugText);
 //            scraperDebugText.setText("Scraping CTP...");
+
+            Button scrape_btn = (Button) findViewById(R.id.scrape_button);
+            scrape_btn.setVisibility(View.GONE);
+
+            AVLoadingIndicatorView indicator_view = (AVLoadingIndicatorView) findViewById(R.id.loadingIndicator);
+            indicator_view.show();
         }
 
         @Override
